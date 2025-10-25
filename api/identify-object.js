@@ -10,35 +10,34 @@ export default async function handler(request, response) {
             return response.status(405).json({ error: 'Method Not Allowed' });
         }
 
-        // --- MODIFICADO: 'contexto' removido ---
         const { image } = request.body;
         if (!image) {
             return response.status(400).json({ error: 'A imagem é obrigatória.' });
         }
 
-        // --- MODIFICADO: PROMPT ATUALIZADO (seção de contexto removida) ---
+        // --- PROMPT MODIFICADO: FOCO NA PRECISÃO E ANTI-ALUCINAÇÃO ---
         let promptText = `
-        Você é um "Identificador Universal de Produtos" e especialista em e-commerce. Sua tarefa é analisar a imagem de um objeto e identificá-lo com o máximo de precisão possível para fins de compra.
+        Você é um "Identificador Universal de Produtos". Sua tarefa é analisar a imagem de um objeto e identificá-lo com a MAIOR PRECISÃO POSSÍVEL.
 
         Responda estritamente como um único objeto JSON. O objeto deve conter uma chave "identification", que é um objeto com a seguinte estrutura:
         {
           "identification": {
-            "name": "Nome exato do produto (inclua Marca e Modelo, se visível. Ex: 'Tênis Nike Air Force 1 07 Branco', 'Caneca de cerâmica azul', 'iPhone 15 Pro Max Titâ
-nio Natural')",
-            "description": "Uma breve descrição (1-2 frases) do objeto, sua função ou características principais.",
-            "search_query": "Um termo de busca curto e otimizado, ideal para o Google Shopping. (Ex: 'Nike Air Force 1 07 white', 'caneca cerâmica azul', 'iPhone 15 Pro Max 256GB natural titanium')"
+            "name": "Nome do produto",
+            "description": "Uma breve descrição (1-2 frases) do objeto.",
+            "search_query": "Um termo de busca curto e otimizado para o Google Shopping."
           }
         }
 
-        REGRAS IMPORTANTES:
-        1.  **Seja Preciso:** Identifique a marca, o modelo, a cor ou qualquer detalhe relevante.
-        2.  **Seja Realista:** Se for um objeto genérico (ex: "uma maçã", "um lápis"), apenas o identifique. O termo de busca será simples (ex: "maçã vermelha").
-        3.  **Termo de Busca:** O 'search_query' é a parte mais importante. Deve ser o que uma pessoa digitaria no Google para COMPRAR este item exato.
-        4.  **Recusa (Pessoas/etc):** Se a imagem for de uma pessoa, animal de estimação ou algo que não pode ser "comprado", responda:
+        REGRAS DE OURO PARA IDENTIFICAÇÃO:
+        1.  **PRE precisão DA MARCA/MODELO:** Identifique a Marca e o Modelo APENAS se o logo, o nome ou o design 100% inconfundível estiverem CLARAMENTE VISÍVEIS na imagem.
+        2.  **NÃO INVENTE (REGRA MAIS IMPORTANTE):** Se a marca ou o modelo não forem visíveis ou estiverem borrados, NÃO ADIVINHE. Identifique o objeto de forma genérica (ex: "Mouse sem fio preto", "Tênis de corrida azul", "Garrafa de água de aço inoxidável").
+        3.  **USE A DESCRIÇÃO PARA EXPLICAR:** Se você identificar como genérico, use o campo "description" para explicar o porquê (ex: "Um mouse sem fio. A marca não está visível na imagem, por isso não é possível identificar o modelo exato.").
+        4.  **TERMO DE BUSCA:** O "search_query" deve refletir o "name". Se o nome for "iPhone 15 Pro", a busca é "iPhone 15 Pro". Se o nome for "Mouse sem fio preto", a busca é "mouse sem fio preto".
+        5.  **RECUSA (NÃO-PRODUTOS):** Se a imagem for de uma pessoa, animal, paisagem, etc., responda:
             {
               "identification": {
                 "name": "Não é um produto",
-                "description": "O objeto na imagem (ex: pessoa, paisagem) não é um produto que possa ser comprado.",
+                "description": "A imagem mostra algo que não é um produto (ex: pessoa, animal, paisagem).",
                 "search_query": null
               }
             }

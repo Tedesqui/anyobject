@@ -1,0 +1,10 @@
+{
+  "name": "geofinder-ai-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend para o GeoFinder - Identificador de Pedras",
+  "type": "module",  
+  "dependencies": {
+    "openai": "^4.0.0"
+  }
+}
